@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     title: 'Kamal Store | Mobile और Accessories',
     description: 'Mobile, headphones, watches, accessories और repair services—दुल्लापुर बाजार।',
     siteName: 'Kamal Store',
+    url: 'https://kamal-mobile.vercel.app',
   },
   twitter: { card: 'summary', title: 'Kamal Store | दुल्लापुर बाजार', description: 'Mobile, accessories और repair services के लिए Kamal Store।' },
   robots: { index: true, follow: true },
