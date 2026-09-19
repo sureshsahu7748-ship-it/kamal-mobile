@@ -8,6 +8,7 @@ export const supabase = createClient(
 export type Product = {
   id: string
   name: string
+  category?: string
   brand: string
   network: string
   spec: string
