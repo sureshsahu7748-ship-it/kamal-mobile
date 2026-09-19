@@ -1,3 +1,4 @@
+import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -13,6 +14,7 @@ export async function POST(request: Request) {
   const fallbackPasscode = process.env.OWNER_PASSCODE || '9981'
   const { data: setting } = await admin.from(settingsTable).select('passcode').eq('id', 'main').maybeSingle()
   const expectedPasscode = setting?.passcode || fallbackPasscode
+
   if (body.action === 'login') return NextResponse.json({ ok: body.passcode === expectedPasscode })
   if (body.action === 'change_passcode') {
     if (body.currentPasscode !== expectedPasscode) return NextResponse.json({ error: 'Current passcode is incorrect' }, { status: 401 })
@@ -21,6 +23,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: !error, error: error?.message }, { status: error ? 400 : 200 })
   }
   if (request.headers.get('x-owner-passcode') !== expectedPasscode) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (body.action === 'upload_images') {
+    const files = body.files as { name: string; type: string; data: string }[]
+    if (!Array.isArray(files) || files.length < 1 || files.length > 3) return NextResponse.json({ error: '1 से 3 images चुनें' }, { status: 400 })
+    const urls: string[] = []
+    for (const file of files) {
+      if (!file.type.startsWith('image/') || file.data.length > 8_000_000) return NextResponse.json({ error: 'केवल 8MB तक की image files मान्य हैं' }, { status: 400 })
+      const buffer = Buffer.from(file.data.split(',')[1] || '', 'base64')
+      const blob = await put(`products/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '-')}`, buffer, { access: 'public', contentType: file.type })
+      urls.push(blob.url)
+    }
+    return NextResponse.json({ urls })
+  }
+
   if (!tables.has(body.table)) return NextResponse.json({ error: 'Invalid table' }, { status: 400 })
   if (body.action === 'insert') {
     const { data, error } = await admin.from(body.table).insert(body.payload).select().single()
@@ -36,3 +52,5 @@ export async function POST(request: Request) {
   }
   return NextResponse.json({ error: 'Unsupported action' }, { status: 400 })
 }
+
+export const runtime = 'nodejs'
