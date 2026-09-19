@@ -67,16 +67,20 @@ button, input, select { font: inherit; }
 .owner-upload { position: fixed; z-index: 75; right: clamp(14px, 4vw, 48px); top: clamp(14px, 4vw, 48px); width: min(360px, calc(100vw - 28px)); margin: 0; box-shadow: 0 20px 55px #061a3380; }
 .owner-upload form { display: none; }
 .owner-upload form button { width: 100%; }
-.owner-passcode { position: fixed; z-index: 76; right: clamp(14px, 4vw, 48px); top: clamp(14px, 4vw, 48px); width: min(300px, calc(100vw - 28px)); padding: 12px; border: 1px solid #dbe7ef; border-radius: 18px; background: #fff; box-shadow: 0 20px 55px #061a3380; }
-.owner-passcode-toggle { width: 100%; border: 0; border-radius: 10px; padding: 11px 14px; color: #fff; background: linear-gradient(100deg, #1d4ed8, #06b6a4); font-size: 12px; font-weight: 800; cursor: pointer; }
+.owner-passcode { position: fixed; z-index: 76; right: clamp(14px, 4vw, 48px); top: clamp(14px, 4vw, 48px); width: auto; padding: 0; border: 0; border-radius: 12px; background: transparent; }
+.owner-passcode.open { width: min(300px, calc(100vw - 28px)); padding: 12px; border: 1px solid #dbe7ef; background: #fff; box-shadow: 0 20px 55px #061a3380; }
+.owner-passcode-toggle { width: auto; border: 0; border-radius: 999px; padding: 9px 13px; color: #fff; background: linear-gradient(100deg, #1d4ed8, #06b6a4); box-shadow: 0 5px 14px #071a3330; font-size: 11px; font-weight: 800; white-space: nowrap; cursor: pointer; }
 .owner-passcode form { display: flex; flex-direction: column; gap: 10px; padding: 12px 2px 2px; }
+.owner-passcode.open .owner-passcode-toggle { width: 100%; border-radius: 10px; }
+.owner-passcode form button { min-height: 40px; }
+.owner-passcode form input { min-height: 40px; }
 .owner-passcode form strong { font-size: 13px; color: #071a33; }
 .owner-passcode input { width: 100%; border: 1px solid #dbe7ef; border-radius: 9px; padding: 10px 11px; font: inherit; font-size: 12px; }
 .owner-passcode form button { border: 0; border-radius: 9px; padding: 10px; color: #fff; background: #071a33; font-size: 11px; font-weight: 800; cursor: pointer; }
 .owner-passcode small { color: #087b65; font-size: 11px; font-weight: 700; }
 .dark-mode .owner-passcode { border-color: #29445e; background: #10233a; }
 .dark-mode .owner-passcode form strong { color: #ecf4fb; }
-@media (max-width: 700px) { .owner-upload { right: 14px; top: 14px; } .owner-passcode { right: 14px; top: 14px; } }
+@media (max-width: 700px) { .owner-upload { right: 14px; top: 14px; } .owner-passcode { right: 14px; top: 14px; } .owner-passcode-toggle { padding: 8px 11px; font-size: 10px; } }
 @media (max-width: 700px) { .owner-upload { right: 14px; top: 14px; } }
 .admin-notice { margin: 12px auto; padding: 11px 14px; border: 1px solid #a7e7dd; border-radius: 10px; color: #087b65; background: #effcf9; font-size: 12px; font-weight: 700; }
 @media (max-width: 700px) { .admin-panel { padding: 22px 14px; }.admin-stat-grid { grid-template-columns: repeat(2,1fr); }.admin-tabs { overflow-x: auto; }.admin-tabs button { flex: 0 0 auto; }.admin-form { grid-template-columns: 1fr; padding: 16px; }.admin-form > :last-child { grid-column: auto; }.admin-list,.owner-upload { padding: 16px; } }
