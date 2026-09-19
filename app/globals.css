@@ -65,9 +65,9 @@ button, input, select { font: inherit; }
 .owner-upload { position: relative; z-index: 70; margin-top: 18px; }
 .owner-upload input[type=file] { padding: 9px; border-style: dashed; background: #f7fbfc; }
 .owner-upload { position: fixed; z-index: 75; right: clamp(14px, 4vw, 48px); top: clamp(14px, 4vw, 48px); width: min(360px, calc(100vw - 28px)); margin: 0; box-shadow: 0 20px 55px #061a3380; }
-.owner-upload form { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.owner-upload form { display: none; }
 .owner-upload form button { width: 100%; }
-.owner-passcode { position: fixed; z-index: 76; left: clamp(14px, 4vw, 48px); top: clamp(14px, 4vw, 48px); width: min(300px, calc(100vw - 28px)); padding: 12px; border: 1px solid #dbe7ef; border-radius: 18px; background: #fff; box-shadow: 0 20px 55px #061a3380; }
+.owner-passcode { position: fixed; z-index: 76; right: clamp(14px, 4vw, 48px); top: clamp(14px, 4vw, 48px); width: min(300px, calc(100vw - 28px)); padding: 12px; border: 1px solid #dbe7ef; border-radius: 18px; background: #fff; box-shadow: 0 20px 55px #061a3380; }
 .owner-passcode-toggle { width: 100%; border: 0; border-radius: 10px; padding: 11px 14px; color: #fff; background: linear-gradient(100deg, #1d4ed8, #06b6a4); font-size: 12px; font-weight: 800; cursor: pointer; }
 .owner-passcode form { display: flex; flex-direction: column; gap: 10px; padding: 12px 2px 2px; }
 .owner-passcode form strong { font-size: 13px; color: #071a33; }
@@ -76,7 +76,7 @@ button, input, select { font: inherit; }
 .owner-passcode small { color: #087b65; font-size: 11px; font-weight: 700; }
 .dark-mode .owner-passcode { border-color: #29445e; background: #10233a; }
 .dark-mode .owner-passcode form strong { color: #ecf4fb; }
-@media (max-width: 700px) { .owner-upload { right: 14px; top: 14px; } .owner-passcode { left: 14px; top: 14px; } }
+@media (max-width: 700px) { .owner-upload { right: 14px; top: 14px; } .owner-passcode { right: 14px; top: 14px; } }
 @media (max-width: 700px) { .owner-upload { right: 14px; top: 14px; } }
 .admin-notice { margin: 12px auto; padding: 11px 14px; border: 1px solid #a7e7dd; border-radius: 10px; color: #087b65; background: #effcf9; font-size: 12px; font-weight: 700; }
 @media (max-width: 700px) { .admin-panel { padding: 22px 14px; }.admin-stat-grid { grid-template-columns: repeat(2,1fr); }.admin-tabs { overflow-x: auto; }.admin-tabs button { flex: 0 0 auto; }.admin-form { grid-template-columns: 1fr; padding: 16px; }.admin-form > :last-child { grid-column: auto; }.admin-list,.owner-upload { padding: 16px; } }
