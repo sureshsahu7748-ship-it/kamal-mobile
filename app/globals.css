@@ -62,8 +62,8 @@ button, input, select { font: inherit; }
 .admin-list > * { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 0; border-bottom: 1px solid #edf2f6; }
 .admin-list > *:last-child { border-bottom: 0; }
 .admin-list button { border: 1px solid #ffd7d7; border-radius: 9px; padding: 8px 11px; color: #c24141; background: #fff7f7; font-size: 11px; font-weight: 800; }
-.owner-admin-stack { position: relative; z-index: 20; }
-.owner-upload { position: relative; z-index: 1; width: min(720px, calc(100% - 32px)); margin: -18px auto 28px; padding: 16px 22px; border: 1px solid #dbe7ef; border-radius: 0 0 18px 18px; background: #fff; box-shadow: 0 12px 32px #14345c0d; }
+.owner-admin-stack { position: relative; z-index: 20; width: 100%; }
+.owner-upload { position: relative; z-index: 2; width: min(720px, calc(100% - 32px)); margin: -18px auto 28px; padding: 16px 22px; border: 1px solid #dbe7ef; border-radius: 0 0 18px 18px; background: #fff; box-shadow: 0 12px 32px #14345c0d; }
 .owner-upload input[type=file] { padding: 9px; border-style: dashed; background: #f7fbfc; }
 .owner-upload { border-top: 1px solid #edf2f6; }
 .owner-upload form { display: block; }
@@ -72,7 +72,7 @@ button, input, select { font: inherit; }
 .image-picker-button { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 14px; border: 1px dashed #8bb8c8; border-radius: 11px; color: #087b65; background: #f3fbfa; cursor: pointer; font-size: 12px; font-weight: 800; }
 .image-picker-button:hover { border-color: #06b6a4; background: #e8f8f5; }
 .owner-upload form button { width: 100%; }
-.owner-passcode { position: absolute; z-index: 30; right: 22px; top: 22px; width: auto; padding: 0; border: 0; border-radius: 12px; background: transparent; }
+.owner-passcode { position: absolute; z-index: 40; right: max(22px, calc((100% - 720px) / 2 + 22px)); top: 22px; width: auto; padding: 0; border: 0; border-radius: 12px; background: transparent; }
 .owner-passcode.open { width: min(300px, calc(100vw - 28px)); padding: 12px; border: 1px solid #dbe7ef; background: #fff; box-shadow: 0 20px 55px #061a3380; }
 .owner-passcode-toggle { display: inline-flex; align-items: center; justify-content: center; width: auto; border: 0; border-radius: 999px; padding: 8px 12px; color: #fff; background: linear-gradient(100deg, #1d4ed8, #06b6a4); box-shadow: 0 5px 14px #071a3330; font-size: 11px; font-weight: 800; white-space: nowrap; cursor: pointer; }
 .owner-passcode form { display: flex; flex-direction: column; gap: 10px; padding: 12px 2px 2px; }
@@ -85,7 +85,7 @@ button, input, select { font: inherit; }
 .owner-passcode small { color: #087b65; font-size: 11px; font-weight: 700; }
 .dark-mode .owner-passcode { border-color: #29445e; background: #10233a; }
 .dark-mode .owner-passcode form strong { color: #ecf4fb; }
-@media (max-width: 700px) { .owner-upload { width: 100%; } .owner-passcode { right: 14px; top: 14px; } .owner-passcode-toggle { padding: 8px 11px; font-size: 10px; } }
+@media (max-width: 700px) { .owner-upload { width: calc(100% - 28px); margin-left: auto; margin-right: auto; } .owner-passcode { right: 14px; top: 14px; } .owner-passcode-toggle { padding: 8px 11px; font-size: 10px; } }
 .admin-notice { margin: 12px auto; padding: 11px 14px; border: 1px solid #a7e7dd; border-radius: 10px; color: #087b65; background: #effcf9; font-size: 12px; font-weight: 700; }
 @media (max-width: 700px) { .admin-panel { padding: 22px 14px; }.admin-stat-grid { grid-template-columns: repeat(2,1fr); }.admin-tabs { overflow-x: auto; }.admin-tabs button { flex: 0 0 auto; }.admin-form { grid-template-columns: 1fr; padding: 16px; }.admin-form > :last-child { grid-column: auto; }.admin-list,.owner-upload { padding: 16px; } }
 @media (max-width: 380px) { .admin-stat-grid { gap: 8px; }.admin-stat-grid > * { padding: 12px; }.admin-stat-grid strong { font-size: 21px; } }
