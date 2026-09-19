@@ -35,3 +35,35 @@ button, input, select { font: inherit; }
 
 @theme inline { --color-background: #f7f9fc; --color-foreground: #10213a; }
 @layer base { * { border-color: var(--line); } }
+
+/* Owner workspace: a focused, mobile-friendly management surface. */
+.admin-panel { position: fixed; inset: 0; z-index: 60; overflow-y: auto; padding: 38px max(20px,4vw); color: #10213a; background: linear-gradient(135deg,#f4f8fc 0%,#eaf5f6 100%); }
+.admin-panel::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(circle at 90% 0%,#06b6a41c,transparent 32%), radial-gradient(circle at 0% 100%,#1d4ed815,transparent 30%); }
+.admin-panel > * { width: min(1180px,100%); margin-inline: auto; }
+.admin-panel h2 { margin: 0; color: #071a33; font-size: clamp(25px,4vw,38px); letter-spacing: -.8px; }
+.admin-panel h3 { color: #071a33; font-size: 17px; }
+.admin-panel p { color: #66748a; font-size: 12px; line-height: 1.7; }
+.admin-panel button { cursor: pointer; }
+.admin-panel input,.admin-panel select,.admin-panel textarea { width: 100%; min-height: 43px; padding: 10px 12px; color: #10213a; background: #fff; border: 1px solid #d8e3ec; border-radius: 11px; outline: none; transition: border-color .2s,box-shadow .2s; }
+.admin-panel textarea { min-height: 92px; resize: vertical; }
+.admin-panel input:focus,.admin-panel select:focus,.admin-panel textarea:focus { border-color: #06b6a4; box-shadow: 0 0 0 4px #06b6a41a; }
+.admin-panel label { display: flex; flex-direction: column; gap: 7px; color: #52627a; font-size: 11px; font-weight: 800; }
+.admin-panel .button,.admin-panel button[type=submit] { border: 0; border-radius: 11px; padding: 12px 16px; color: #fff; background: linear-gradient(135deg,#1d4ed8,#06b6a4); box-shadow: 0 9px 20px #1d4ed826; font-weight: 800; }
+.admin-tabs { display: flex; gap: 8px; margin: 26px auto 22px; padding: 6px; border: 1px solid #dce7ef; border-radius: 15px; background: #ffffffb8; box-shadow: 0 8px 22px #14345c0b; }
+.admin-tabs button { flex: 1; border: 0; border-radius: 10px; padding: 11px 14px; color: #708198; background: transparent; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.admin-tabs button.active,.admin-tabs button[aria-selected=true] { color: #fff; background: #071a33; box-shadow: 0 5px 13px #071a3340; }
+.admin-stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 13px; margin: 24px auto; }
+.admin-stat-grid > * { min-height: 92px; padding: 17px; border: 1px solid #dbe7ef; border-radius: 16px; background: #fff; box-shadow: 0 10px 26px #14345c0b; }
+.admin-stat-grid strong { display: block; margin-top: 8px; color: #071a33; font-size: 25px; }
+.admin-form,.admin-list,.owner-upload { padding: 22px; border: 1px solid #dbe7ef; border-radius: 18px; background: #fff; box-shadow: 0 12px 32px #14345c0d; }
+.admin-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.admin-form > :last-child { grid-column: 1 / -1; }
+.admin-list { display: flex; flex-direction: column; gap: 10px; margin-top: 17px; }
+.admin-list > * { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 0; border-bottom: 1px solid #edf2f6; }
+.admin-list > *:last-child { border-bottom: 0; }
+.admin-list button { border: 1px solid #ffd7d7; border-radius: 9px; padding: 8px 11px; color: #c24141; background: #fff7f7; font-size: 11px; font-weight: 800; }
+.owner-upload { margin-top: 18px; }
+.owner-upload input[type=file] { padding: 9px; border-style: dashed; background: #f7fbfc; }
+.admin-notice { margin: 12px auto; padding: 11px 14px; border: 1px solid #a7e7dd; border-radius: 10px; color: #087b65; background: #effcf9; font-size: 12px; font-weight: 700; }
+@media (max-width: 700px) { .admin-panel { padding: 22px 14px; }.admin-stat-grid { grid-template-columns: repeat(2,1fr); }.admin-tabs { overflow-x: auto; }.admin-tabs button { flex: 0 0 auto; }.admin-form { grid-template-columns: 1fr; padding: 16px; }.admin-form > :last-child { grid-column: auto; }.admin-list,.owner-upload { padding: 16px; } }
+@media (max-width: 380px) { .admin-stat-grid { gap: 8px; }.admin-stat-grid > * { padding: 12px; }.admin-stat-grid strong { font-size: 21px; } }
