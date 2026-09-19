@@ -65,7 +65,7 @@ button, input, select { font: inherit; }
 .product-form-image-picker { display: contents; }
 .owner-upload { position: relative; z-index: 70; margin-top: 18px; }
 .owner-upload input[type=file] { padding: 9px; border-style: dashed; background: #f7fbfc; }
-.owner-upload { position: relative; z-index: 1; width: 100%; margin: 0; padding: 12px 0 0; border: 0; border-top: 1px solid #edf2f6; border-radius: 0; background: transparent; box-shadow: none; }
+.owner-upload { position: fixed; z-index: 120; right: clamp(14px, 4vw, 48px); top: 82px; width: min(340px, calc(100vw - 28px)); margin: 0; padding: 16px; border: 1px solid #dbe7ef; border-radius: 16px; background: #fff; box-shadow: 0 18px 50px #061a3340; }
 .owner-upload form { display: none; }
 .owner-upload strong { display: block; margin-bottom: 8px; color: #52627a; font-size: 11px; }
 .owner-upload input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
@@ -85,7 +85,7 @@ button, input, select { font: inherit; }
 .owner-passcode small { color: #087b65; font-size: 11px; font-weight: 700; }
 .dark-mode .owner-passcode { border-color: #29445e; background: #10233a; }
 .dark-mode .owner-passcode form strong { color: #ecf4fb; }
-@media (max-width: 700px) { .owner-passcode { right: 14px; top: 14px; } .owner-passcode-toggle { padding: 8px 11px; font-size: 10px; } }
+@media (max-width: 700px) { .owner-upload { right: 14px; top: 72px; width: calc(100vw - 28px); } .owner-passcode { right: 14px; top: 14px; } .owner-passcode-toggle { padding: 8px 11px; font-size: 10px; } }
 .admin-notice { margin: 12px auto; padding: 11px 14px; border: 1px solid #a7e7dd; border-radius: 10px; color: #087b65; background: #effcf9; font-size: 12px; font-weight: 700; }
 @media (max-width: 700px) { .admin-panel { padding: 22px 14px; }.admin-stat-grid { grid-template-columns: repeat(2,1fr); }.admin-tabs { overflow-x: auto; }.admin-tabs button { flex: 0 0 auto; }.admin-form { grid-template-columns: 1fr; padding: 16px; }.admin-form > :last-child { grid-column: auto; }.admin-list,.owner-upload { padding: 16px; } }
 @media (max-width: 380px) { .admin-stat-grid { gap: 8px; }.admin-stat-grid > * { padding: 12px; }.admin-stat-grid strong { font-size: 21px; } }
