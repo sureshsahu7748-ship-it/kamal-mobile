@@ -19,7 +19,7 @@ export function RepairForm() {
       {sent && <div className="sent-note"><Check size={17} /> WhatsApp संदेश तैयार है।</div>}
       <div className="form-row">
         <label>आपका नाम<input required name="name" placeholder="पूरा नाम" /></label>
-        <label>फोन नंबर<input required name="phone" type="tel" placeholder="10 अंकों का नंबर" /></label>
+        <label>फोन नंबर<input required name="phone" type="tel" inputMode="numeric" pattern="[6-9][0-9]{9}" maxLength={10} title="10 अंकों का सही मोबाइल नंबर लिखें" placeholder="10 अंकों का नंबर" /></label>
       </div>
       <div className="form-row">
         <label>मोबाइल मॉडल<input required name="model" placeholder="जैसे: Redmi Note 12" /></label>
