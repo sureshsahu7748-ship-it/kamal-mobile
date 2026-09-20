@@ -23,7 +23,7 @@ export type Review = { id: string; customer_name: string; location: string | nul
 export type StoreTable = 'products' | 'services' | 'offers' | 'reviews'
 
 export async function adminRequest(action: 'login' | 'change_passcode' | 'insert' | 'update' | 'delete', table?: StoreTable, payload?: unknown, id?: string, passcode?: string, extra?: { currentPasscode?: string; newPasscode?: string }) {
-  const response = await fetch('/api/owner', { method: 'POST', headers: { 'content-type': 'application/json', ...(passcode ? { 'x-owner-passcode': passcode } : {}) }, body: JSON.stringify({ action, table, payload, id, passcode, ...extra }) })
+  const response = await fetch('/api/owner', { method: 'POST', headers: { 'content-type': 'application/json', ...(passcode ? { 'x-owner-passcode': encodeURIComponent(passcode) } : {}) }, body: JSON.stringify({ action, table, payload, id, passcode, ...extra }) })
   return response.json()
 }
 

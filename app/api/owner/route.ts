@@ -1,56 +1,102 @@
 import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { cleanPayload, clearFails, clientId, hashPasscode, isHashed, lockedFor, MAX_PASSCODE, MIN_PASSCODE, recordFail, verifyPasscode } from '@/lib/owner-security'
 
 const tables = new Set(['products', 'services', 'offers', 'reviews'])
 const settingsTable = 'owner_settings'
+const json = (data: Record<string, unknown>, status = 200) => NextResponse.json(data, { status })
+
+// पासकोड header में encode होकर आता है (हिंदी/खास अक्षर के लिए)
+function headerPasscode(request: Request): string {
+  const raw = request.headers.get('x-owner-passcode') || ''
+  try { return decodeURIComponent(raw) } catch { return raw }
+}
 
 export async function POST(request: Request) {
-  const body = await request.json()
+  let body: any
+  try { body = await request.json() } catch { return json({ error: 'गलत अनुरोध' }, 400) }
+  if (!body || typeof body !== 'object') return json({ error: 'गलत अनुरोध' }, 400)
+
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY
-  if (!url || !key) return NextResponse.json({ error: 'Supabase server configuration missing' }, { status: 500 })
-  const admin = createClient(url, key)
-  const fallbackPasscode = process.env.OWNER_PASSCODE || '9981'
-  const { data: setting } = await admin.from(settingsTable).select('passcode').eq('id', 'main').maybeSingle()
-  const expectedPasscode = setting?.passcode || fallbackPasscode
+  if (!url || !key) return json({ error: 'Supabase server configuration missing' }, 500)
 
-  if (body.action === 'login') return NextResponse.json({ ok: body.passcode === expectedPasscode })
-  if (body.action === 'change_passcode') {
-    if (body.currentPasscode !== expectedPasscode) return NextResponse.json({ error: 'Current passcode is incorrect' }, { status: 401 })
-    if (typeof body.newPasscode !== 'string' || body.newPasscode.length < 4 || body.newPasscode.length > 32) return NextResponse.json({ error: 'Passcode must be 4-32 characters' }, { status: 400 })
-    const { error } = await admin.from(settingsTable).upsert({ id: 'main', passcode: body.newPasscode }, { onConflict: 'id' })
-    return NextResponse.json({ ok: !error, error: error?.message }, { status: error ? 400 : 200 })
+  // बार-बार गलत पासकोड डालने वाले को कुछ देर के लिए रोकना
+  const id = clientId(request)
+  const wait = lockedFor(id)
+  if (wait) return json({ ok: false, locked: true, error: `बहुत ज़्यादा गलत कोशिशें हुईं। ${Math.ceil(wait / 60000)} मिनट बाद फिर कोशिश करें।` }, 429)
+
+  const admin = createClient(url, key)
+  const envPasscode = process.env.OWNER_PASSCODE
+  const { data: setting } = await admin.from(settingsTable).select('passcode').eq('id', 'main').maybeSingle()
+  // पुराना व्यवहार वैसा ही: database > OWNER_PASSCODE > डिफ़ॉल्ट (ताकि आप लॉगिन से बाहर न हों)
+  const stored: string = setting?.passcode || envPasscode || '9981'
+  const usingDefault = !setting?.passcode && !envPasscode
+
+  if (body.action === 'login') {
+    if (!verifyPasscode(body.passcode, stored)) { recordFail(id); return json({ ok: false, error: 'पासकोड गलत है।' }, 401) }
+    clearFails(id)
+    // पुराना सादा पासकोड सही निकला तो उसे चुपचाप सुरक्षित (hashed) रूप में बदल देना
+    if (setting?.passcode && !isHashed(setting.passcode)) {
+      await admin.from(settingsTable).upsert({ id: 'main', passcode: hashPasscode(body.passcode) }, { onConflict: 'id' })
+    }
+    return json({ ok: true, usingDefault })
   }
-  if (request.headers.get('x-owner-passcode') !== expectedPasscode) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (body.action === 'change_passcode') {
+    if (!verifyPasscode(body.currentPasscode, stored)) { recordFail(id); return json({ error: 'Current passcode is incorrect' }, 401) }
+    const next = body.newPasscode
+    if (typeof next !== 'string' || next.length < MIN_PASSCODE || next.length > MAX_PASSCODE) return json({ error: `पासकोड ${MIN_PASSCODE} से ${MAX_PASSCODE} अक्षरों का होना चाहिए।` }, 400)
+    const { error } = await admin.from(settingsTable).upsert({ id: 'main', passcode: hashPasscode(next) }, { onConflict: 'id' })
+    if (error) return json({ ok: false, error: error.message }, 400)
+    clearFails(id)
+    return json({ ok: true })
+  }
+
+  if (!verifyPasscode(headerPasscode(request), stored)) { recordFail(id); return json({ error: 'Unauthorized' }, 401) }
+  clearFails(id)
 
   if (body.action === 'upload_images') {
     const files = body.files as { name: string; type: string; data: string }[]
-    if (!Array.isArray(files) || files.length < 1 || files.length > 3) return NextResponse.json({ error: '1 से 3 images चुनें' }, { status: 400 })
+    if (!Array.isArray(files) || files.length < 1 || files.length > 3) return json({ error: '1 से 3 फ़ोटो चुनें' }, 400)
     const urls: string[] = []
-    for (const file of files) {
-      if (!file.type.startsWith('image/') || file.data.length > 8_000_000) return NextResponse.json({ error: 'केवल 8MB तक की image files मान्य हैं' }, { status: 400 })
-      const buffer = Buffer.from(file.data.split(',')[1] || '', 'base64')
-      const blob = await put(`products/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '-')}`, buffer, { access: 'public', contentType: file.type })
-      urls.push(blob.url)
+    try {
+      for (const [index, file] of files.entries()) {
+        if (!file || typeof file.name !== 'string' || typeof file.type !== 'string' || typeof file.data !== 'string' || !/^image\/(jpeg|png|webp)$/.test(file.type) || file.data.length > 8_000_000) {
+          return json({ error: 'सिर्फ़ JPG, PNG या WebP फ़ोटो (8MB तक) चलेगी' }, 400)
+        }
+        const buffer = Buffer.from(file.data.split(',')[1] || '', 'base64')
+        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-') || 'photo.jpg'
+        const blob = await put(`products/${Date.now()}-${index}-${safeName}`, buffer, { access: 'public', contentType: file.type })
+        urls.push(blob.url)
+      }
+    } catch {
+      return json({ error: 'फ़ोटो सेव नहीं हो पाई। Vercel Blob की सेटिंग जाँचें।' }, 500)
     }
-    return NextResponse.json({ urls })
+    return json({ urls })
   }
 
-  if (!tables.has(body.table)) return NextResponse.json({ error: 'Invalid table' }, { status: 400 })
+  if (typeof body.table !== 'string' || !tables.has(body.table)) return json({ error: 'Invalid table' }, 400)
+
   if (body.action === 'insert') {
-    const { data, error } = await admin.from(body.table).insert(body.payload).select().single()
-    return NextResponse.json({ data, error: error?.message }, { status: error ? 400 : 200 })
+    const payload = cleanPayload(body.table, body.payload)
+    if (!payload) return json({ error: 'जानकारी अधूरी या गलत है।' }, 400)
+    const { data, error } = await admin.from(body.table).insert(payload).select().single()
+    return json({ data, error: error?.message }, error ? 400 : 200)
   }
   if (body.action === 'update') {
-    const { data, error } = await admin.from(body.table).update(body.payload).eq('id', body.id).select().single()
-    return NextResponse.json({ data, error: error?.message }, { status: error ? 400 : 200 })
+    const payload = cleanPayload(body.table, body.payload)
+    if (!payload || typeof body.id !== 'string' || !body.id) return json({ error: 'जानकारी अधूरी या गलत है।' }, 400)
+    const { data, error } = await admin.from(body.table).update(payload).eq('id', body.id).select().single()
+    return json({ data, error: error?.message }, error ? 400 : 200)
   }
   if (body.action === 'delete') {
+    if (typeof body.id !== 'string' || !body.id) return json({ error: 'गलत अनुरोध' }, 400)
     const { error } = await admin.from(body.table).delete().eq('id', body.id)
-    return NextResponse.json({ ok: !error, error: error?.message }, { status: error ? 400 : 200 })
+    return json({ ok: !error, error: error?.message }, error ? 400 : 200)
   }
-  return NextResponse.json({ error: 'Unsupported action' }, { status: 400 })
+  return json({ error: 'Unsupported action' }, 400)
 }
 
 export const runtime = 'nodejs'
