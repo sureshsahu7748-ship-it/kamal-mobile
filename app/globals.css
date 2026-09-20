@@ -86,6 +86,21 @@ button, input, select { font: inherit; }
 .dark-mode .owner-passcode { border-color: #29445e; background: #10233a; }
 .dark-mode .owner-passcode form strong { color: #ecf4fb; }
 @media (max-width: 700px) { .owner-upload { width: calc(100% - 28px); margin-left: auto; margin-right: auto; } .owner-passcode { right: 14px; top: 14px; } .owner-passcode-toggle { padding: 8px 11px; font-size: 10px; } }
+
+/* --- Amazon जैसा प्रोडक्ट कार्ड + प्रोडक्ट पेज --- */
+.product-grid { gap: 14px; align-items: stretch; }
+.product-grid .product-card { display: flex; flex-direction: column; background: #fff; border: 1px solid #e3e6e6; border-radius: 12px; box-shadow: none; cursor: pointer; }
+.product-grid .product-card:hover { transform: none; border-color: #c8ccd0; box-shadow: 0 4px 14px #0f111114; }
+.product-grid .product-info { display: flex; flex-direction: column; flex: 1; padding: 6px 14px 14px; }
+.product-grid .product-info h3 a { color: inherit; text-decoration: none; }
+.product-grid .whatsapp-button { gap: 8px; min-height: 40px; padding: 8px 12px; border: 0; border-radius: 999px; background: #1fa855; color: #fff; font-size: 13px; font-weight: 700; line-height: 1.2; text-align: center; white-space: nowrap; }
+.product-grid .whatsapp-button:hover { background: #178f47; }
+.pd-overlay { position: fixed; inset: 0; z-index: 300; display: flex; flex-direction: column; background: #fff; color: #0f1111; }
+.pd-bar { display: flex; align-items: center; gap: 10px; padding: 14px; border-bottom: 1px solid #e3e6e6; }
+.pd-scroll { flex: 1; overflow-y: auto; }
+.pd-grid { width: min(1100px, 100%); margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 22px 20px; }
+@media (max-width: 850px) { .pd-grid { grid-template-columns: 1fr; gap: 14px; padding: 12px 14px 20px; } }
+.dark-mode .product-grid .product-card, .dark-mode .pd-overlay { background: #0d2139; color: #e8eef7; }
 .admin-notice { margin: 12px auto; padding: 11px 14px; border: 1px solid #a7e7dd; border-radius: 10px; color: #087b65; background: #effcf9; font-size: 12px; font-weight: 700; }
 @media (max-width: 700px) { .admin-panel { padding: 22px 14px; }.admin-stat-grid { grid-template-columns: repeat(2,1fr); }.admin-tabs { overflow-x: auto; }.admin-tabs button { flex: 0 0 auto; }.admin-form { grid-template-columns: 1fr; padding: 16px; }.admin-form > :last-child { grid-column: auto; }.admin-list,.owner-upload { padding: 16px; } }
 @media (max-width: 380px) { .admin-stat-grid { gap: 8px; }.admin-stat-grid > * { padding: 12px; }.admin-stat-grid strong { font-size: 21px; } }
