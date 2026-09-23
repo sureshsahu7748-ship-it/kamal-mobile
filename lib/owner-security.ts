@@ -67,6 +67,8 @@ export function cleanPayload(table: string, raw: unknown): Record<string, unknow
   if (table === 'products') {
     const price = Number(p.price)
     if (!text(p.name, 120) || !Number.isFinite(price) || price < 0) return null
+    const mrpNumber = p.mrp === '' || p.mrp === null || p.mrp === undefined ? NaN : Number(p.mrp)
+    const mrp = Number.isFinite(mrpNumber) && mrpNumber > price ? mrpNumber : null
     const gallery = Array.isArray(p.gallery_urls) ? p.gallery_urls.filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u)).slice(0, 5) : []
     return {
       name: text(p.name, 120),
@@ -75,6 +77,7 @@ export function cleanPayload(table: string, raw: unknown): Record<string, unknow
       network: text(p.network, 40) || 'सामान्य',
       spec: text(p.spec, 120),
       price,
+      ...('mrp' in p ? { mrp } : {}),
       stock_status: text(p.stock_status, 40) || 'स्टॉक में',
       image_url: text(p.image_url, 1000),
       gallery_urls: gallery,

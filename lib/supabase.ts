@@ -14,6 +14,7 @@ export type Product = {
   spec: string
   price: number
   stock_status: string
+  mrp?: number | null
   image_url: string
   gallery_urls?: string[]
 }
@@ -25,6 +26,14 @@ export type StoreTable = 'products' | 'services' | 'offers' | 'reviews'
 export async function adminRequest(action: 'login' | 'change_passcode' | 'insert' | 'update' | 'delete', table?: StoreTable, payload?: unknown, id?: string, passcode?: string, extra?: { currentPasscode?: string; newPasscode?: string }) {
   const response = await fetch('/api/owner', { method: 'POST', headers: { 'content-type': 'application/json', ...(passcode ? { 'x-owner-passcode': encodeURIComponent(passcode) } : {}) }, body: JSON.stringify({ action, table, payload, id, passcode, ...extra }) })
   return response.json()
+}
+
+/** MRP असली कीमत से ज़्यादा हो तो छूट का % (वरना 0) */
+export function discountPercent(p: { price: number | string; mrp?: number | string | null }): number {
+  const price = Number(p.price)
+  const mrp = Number(p.mrp)
+  if (!Number.isFinite(price) || !Number.isFinite(mrp) || price < 0 || mrp <= price) return 0
+  return Math.round(((mrp - price) / mrp) * 100)
 }
 
 export function whatsappLink(message: string) {
