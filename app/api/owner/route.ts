@@ -1,4 +1,3 @@
-import { put } from '@vercel/blob'
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cleanPayload, clearFails, clientId, hashPasscode, isHashed, lockedFor, MAX_PASSCODE, MIN_PASSCODE, recordFail, verifyPasscode } from '@/lib/owner-security'
@@ -6,6 +5,26 @@ import { cleanPayload, clearFails, clientId, hashPasscode, isHashed, lockedFor, 
 const tables = new Set(['products', 'services', 'offers', 'reviews'])
 const settingsTable = 'owner_settings'
 const json = (data: Record<string, unknown>, status = 200) => NextResponse.json(data, { status })
+
+async function uploadToCloudinary(file: { type: string; data: string; name: string }) {
+  const cloudinaryUrl = process.env.CLOUDINARY_URL || ''
+  const match = cloudinaryUrl.match(/^cloudinary:\/\/([^:]+):([^@]+)@([^/?#]+)$/)
+  if (!match) throw new Error('Cloudinary server configuration missing')
+  const [, apiKey, apiSecret, cloudName] = match
+  const timestamp = Math.floor(Date.now() / 1000)
+  const signatureSource = `folder=kamal-mobile/products&timestamp=${timestamp}${apiSecret}`
+  const signature = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(signatureSource)).then(buffer => Array.from(new Uint8Array(buffer)).map(byte => byte.toString(16).padStart(2, '0')).join(''))
+  const form = new FormData()
+  form.append('file', new Blob([Buffer.from(file.data.split(',')[1] || '', 'base64')], { type: file.type }), file.name)
+  form.append('api_key', apiKey)
+  form.append('timestamp', String(timestamp))
+  form.append('folder', 'kamal-mobile/products')
+  form.append('signature', signature)
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: form })
+  const result = await response.json() as { secure_url?: string; error?: { message?: string } }
+  if (!response.ok || !result.secure_url) throw new Error(result.error?.message || 'Cloudinary upload failed')
+  return result.secure_url
+}
 
 // पासकोड header में encode होकर आता है (हिंदी/खास अक्षर के लिए)
 function headerPasscode(request: Request): string {
@@ -66,13 +85,11 @@ export async function POST(request: Request) {
         if (!file || typeof file.name !== 'string' || typeof file.type !== 'string' || typeof file.data !== 'string' || !/^image\/(jpeg|png|webp)$/.test(file.type) || file.data.length > 8_000_000) {
           return json({ error: 'सिर्फ़ JPG, PNG या WebP फ़ोटो (8MB तक) चलेगी' }, 400)
         }
-        const buffer = Buffer.from(file.data.split(',')[1] || '', 'base64')
         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-') || 'photo.jpg'
-        const blob = await put(`products/${Date.now()}-${index}-${safeName}`, buffer, { access: 'public', contentType: file.type })
-        urls.push(blob.url)
+        urls.push(await uploadToCloudinary({ name: safeName, type: file.type, data: file.data }))
       }
     } catch {
-      return json({ error: 'फ़ोटो सेव नहीं हो पाई। Vercel Blob की सेटिंग जाँचें।' }, 500)
+      return json({ error: 'फ़ोटो सेव नहीं हो पाई। Cloudinary की सेटिंग जाँचें।' }, 500)
     }
     return json({ urls })
   }

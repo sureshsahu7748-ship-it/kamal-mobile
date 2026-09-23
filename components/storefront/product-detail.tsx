@@ -79,7 +79,7 @@ export function ProductDetail({ product, products, onClose, onOpen }: { product:
     <div className="pd-overlay" role="dialog" aria-modal="true" aria-label={product.name}>
       <div className="pd-bar">
         <button ref={backRef} type="button" className="pd-back" onClick={onClose} aria-label="वापस जाएं"><ChevronRight size={22} className="pd-flip" /><span>वापस</span></button>
-        <span className="pd-bar-title">Kamal Store</span>
+        <span className="pd-bar-title">Kamal Mobile & Video Graphy</span>
         <button type="button" className="pd-share" onClick={share}>{copied ? 'लिंक कॉपी हुआ ✓' : 'शेयर करें'}</button>
       </div>
 
@@ -144,9 +144,12 @@ export function ProductDetail({ product, products, onClose, onOpen }: { product:
             <div className="pd-rel-list">
               {related.map(p => (
                 <button type="button" className="pd-rel" key={p.id} onClick={() => onOpen(p.id)}>
-                  <span className="pd-rel-img"><span className="photo-bg" style={bg(p.image_url)} aria-hidden="true" /><img src={p.image_url} alt="" loading="lazy" /></span>
+                  <span className="pd-rel-img"><span className="photo-bg" style={bg(p.image_url)} aria-hidden="true" /><img src={p.image_url} alt={`${p.name} की फोटो`} loading="lazy" /></span>
+                  <span className="pd-rel-meta"><span>{p.brand}</span>{p.network && <span>{p.network}</span>}</span>
                   <span className="pd-rel-name">{p.name}</span>
+                  {p.spec && <span className="pd-rel-spec">{p.spec}</span>}
                   <b className="pd-rel-price">₹{Number(p.price).toLocaleString('en-IN')}</b>
+                  <span className="pd-rel-action">देखें</span>
                 </button>
               ))}
             </div>
