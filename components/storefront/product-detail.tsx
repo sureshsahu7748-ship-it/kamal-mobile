@@ -7,7 +7,7 @@ import { WhatsAppIcon } from '@/components/storefront/icons'
 
 const bg = (url: string) => ({ backgroundImage: `url("${String(url).replace(/"/g, '%22')}")` })
 
-export function ProductDetail({ product, products, onClose, onOpen }: { product: Product; products: Product[]; onClose: () => void; onOpen: (id: string) => void }) {
+export function ProductDetail({ product, products, onClose, onOpen, standalone = false }: { product: Product; products: Product[]; onClose: () => void; onOpen: (id: string) => void; standalone?: boolean }) {
   const images = useMemo(() => [product.image_url, ...(product.gallery_urls || [])].filter(Boolean), [product])
   const [index, setIndex] = useState(0)
   const [copied, setCopied] = useState(false)
@@ -48,9 +48,11 @@ export function ProductDetail({ product, products, onClose, onOpen }: { product:
   }
 
   const price = Number(product.price).toLocaleString('en-IN')
-  const shareUrl = typeof window === 'undefined' ? '' : `${window.location.origin}${window.location.pathname}#p=${encodeURIComponent(product.id)}`
+  const shareUrl = typeof window === 'undefined' ? '' : `${window.location.origin}/p/${encodeURIComponent(product.id)}`
   const message = `नमस्ते, मुझे यह प्रोडक्ट चाहिए:\n${product.name}${product.spec ? ` (${product.spec})` : ''}\nकीमत: ₹${price}\n${shareUrl}`
   const low = (product.stock_status || '').includes('कम')
+  const off = product.mrp && Number(product.mrp) > Number(product.price) ? Math.round(((Number(product.mrp) - Number(product.price)) / Number(product.mrp)) * 100) : 0
+  const mrpText = Number(product.mrp).toLocaleString('en-IN')
 
   const related = useMemo(() => {
     const others = products.filter(p => p.id !== product.id)
@@ -76,7 +78,7 @@ export function ProductDetail({ product, products, onClose, onOpen }: { product:
   )
 
   return (
-    <div className="pd-overlay" role="dialog" aria-modal="true" aria-label={product.name}>
+    <div className={standalone ? 'pd-overlay pd-page' : 'pd-overlay'} role={standalone ? undefined : 'dialog'} aria-modal={standalone ? undefined : true} aria-label={product.name}>
       <div className="pd-bar">
         <button ref={backRef} type="button" className="pd-back" onClick={onClose} aria-label="वापस जाएं"><ChevronRight size={22} className="pd-flip" /><span>वापस</span></button>
         <span className="pd-bar-title">Kamal Mobile & Video Graphy</span>
@@ -109,7 +111,9 @@ export function ProductDetail({ product, products, onClose, onOpen }: { product:
           <div className="pd-info">
             <div className="pd-brand">ब्रांड: {product.brand}</div>
             <h1 className="pd-title">{product.name}</h1>
-            <div className="pd-price"><small>₹</small>{price}</div>
+            <div className="pd-priceline">{off > 0 && <span className="pd-off">-{off}%</span>}<div className="pd-price"><small>₹</small>{price}</div></div>
+            {off > 0 && <div className="pd-mrp">M.R.P.: <s>₹{mrpText}</s></div>}
+            {off > 0 && <div className="pd-save">आप ₹{(Number(product.mrp) - Number(product.price)).toLocaleString('en-IN')} बचा रहे हैं</div>}
             <div className={low ? 'pd-stock low' : 'pd-stock'}>{low ? 'कम स्टॉक — जल्दी पूछें' : product.stock_status ? `✓ ${product.stock_status}` : ''}</div>
             <div className="pd-chips">
               {product.category && <span>{product.category}</span>}
@@ -125,6 +129,7 @@ export function ProductDetail({ product, products, onClose, onOpen }: { product:
               {product.category && <div className="pd-row"><span>कैटेगरी</span><b>{product.category}</b></div>}
               {product.network && <div className="pd-row"><span>प्रकार / नेटवर्क</span><b>{product.network}</b></div>}
               {product.spec && <div className="pd-row"><span>विवरण</span><b>{product.spec}</b></div>}
+              {off > 0 && <div className="pd-row"><span>MRP</span><b><s>₹{mrpText}</s> ({off}% छूट)</b></div>}
               <div className="pd-row"><span>कीमत</span><b>₹{price}</b></div>
             </div>
 
