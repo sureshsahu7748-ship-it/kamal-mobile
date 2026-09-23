@@ -77,7 +77,7 @@ export function OwnerPanel({ onClose, data, refresh }: { onClose: () => void; da
   function payload(): unknown {
     if (tab === 'products') {
       return {
-        name: form.name, brand: form.brand, spec: form.spec, price: Number(form.price),
+        name: form.name, brand: form.brand, spec: form.spec, price: Number(form.price), mrp: form.mrp ? Number(form.mrp) : null,
         category: form.category, network: form.network, stock_status: form.stock_status,
         image_url: form.image_url,
         gallery_urls: (form.gallery_urls || '').split(/[,\n]/).map(u => u.trim()).filter(Boolean),
@@ -91,13 +91,14 @@ export function OwnerPanel({ onClose, data, refresh }: { onClose: () => void; da
   async function save(e: FormEvent) {
     e.preventDefault()
     if (tab === 'products' && !form.image_url) { setNotice('पहले प्रोडक्ट की फ़ोटो चुनें।'); return }
+    if (tab === 'products' && form.mrp && Number(form.mrp) <= Number(form.price)) { setNotice('MRP (पुरानी कीमत) असली कीमत से ज़्यादा होनी चाहिए, या उसे खाली छोड़ें।'); return }
     setBusy(true)
     try {
       const r = editingId
         ? await adminRequest('update', tab, payload(), editingId, passcode)
         : await adminRequest('insert', tab, payload(), undefined, passcode)
       if (r.error) setNotice(r.error)
-      else { setNotice(editingId ? 'बदलाव सहेज दिया गया।' : 'सहेज दिया गया।'); resetForm(); await refresh() }
+      else { setNotice(r.warning || (editingId ? 'बदलाव सहेज दिया गया।' : 'सहेज दिया गया।')); resetForm(); await refresh() }
     } catch {
       setNotice('सहेज नहीं पाए, फिर कोशिश करें।')
     }
@@ -108,7 +109,7 @@ export function OwnerPanel({ onClose, data, refresh }: { onClose: () => void; da
     setEditingId(row.id)
     setNotice('')
     if (tab === 'products') {
-      setForm({ name: row.name || '', brand: row.brand || '', spec: row.spec || '', price: String(row.price ?? ''), category: row.category || '', network: row.network || '', stock_status: row.stock_status || 'स्टॉक में', image_url: row.image_url || '', gallery_urls: (row.gallery_urls || []).join(',') })
+      setForm({ name: row.name || '', brand: row.brand || '', spec: row.spec || '', price: String(row.price ?? ''), mrp: row.mrp ? String(row.mrp) : '', category: row.category || '', network: row.network || '', stock_status: row.stock_status || 'स्टॉक में', image_url: row.image_url || '', gallery_urls: (row.gallery_urls || []).join(',') })
     } else if (tab === 'services') {
       setForm({ title: row.title || '', description: row.description || '', icon: row.icon || 'Wrench', sort_order: String(row.sort_order ?? 99) })
     } else if (tab === 'offers') {
@@ -159,6 +160,11 @@ export function OwnerPanel({ onClose, data, refresh }: { onClose: () => void; da
     if (failed) setNotice(added ? `${added} फ़ोटो जुड़ गई, पर आगे की नहीं जुड़ पाई: ${failed}` : failed)
     else setNotice(files.length > chosen.length ? `${added} फ़ोटो जुड़ गई। (${MAX_PHOTOS} से ज़्यादा की जगह नहीं है)` : `${added} फ़ोटो जुड़ गई।`)
     setBusy(false)
+  }
+
+  async function copyLink(id: string) {
+    const link = `${window.location.origin}/p/${encodeURIComponent(id)}`
+    try { await navigator.clipboard.writeText(link); setNotice('प्रोडक्ट का लिंक कॉपी हो गया। WhatsApp में चिपका सकते हैं।') } catch { setNotice(link) }
   }
 
   const removePhoto = (index: number) => setForm(f => withPhotos(f, photoList(f).filter((_, i) => i !== index)))
@@ -227,9 +233,10 @@ export function OwnerPanel({ onClose, data, refresh }: { onClose: () => void; da
           <label>ब्रांड (न हो तो खाली छोड़ें)<input value={form.brand || ''} onChange={e => set('brand', e.target.value)} /></label>
           <label>विवरण / स्पेसिफिकेशन<input placeholder="जैसे: 6GB / 128GB, 10000mAh, Neckband" value={form.spec || ''} onChange={e => set('spec', e.target.value)} /></label>
           <label>कीमत (₹)<input required type="number" min="0" inputMode="numeric" value={form.price || ''} onChange={e => set('price', e.target.value)} /></label>
+          <label>MRP / पुरानी कीमत (₹) — चाहें तो<input type="number" min="0" inputMode="numeric" placeholder="जैसे: 19999" value={form.mrp || ''} onChange={e => set('mrp', e.target.value)} /></label>
           <label>कैटेगरी<input list="km-cat" placeholder="जैसे: मोबाइल, चार्जर, स्पीकर" value={form.category || ''} onChange={e => set('category', e.target.value)} /></label>
           <label>प्रकार / नेटवर्क<input list="km-net" placeholder="जैसे: 5G, Bluetooth, Wired" value={form.network || ''} onChange={e => set('network', e.target.value)} /></label>
-          <label>स्टॉक<select value={form.stock_status || 'स्टॉक में'} onChange={e => set('stock_status', e.target.value)}><option>स्टॉक में</option><option>कम स्टॉक</option></select></label>
+          <label className="admin-full">स्टॉक<select value={form.stock_status || 'स्टॉक में'} onChange={e => set('stock_status', e.target.value)}><option>स्टॉक में</option><option>कम स्टॉक</option></select></label>
           <datalist id="km-cat"><option value="मोबाइल" /><option value="हेडफोन / हेडसेट" /><option value="स्मार्टवॉच" /><option value="स्पीकर" /><option value="चार्जर / केबल" /><option value="पावर बैंक" /><option value="कवर / स्क्रीन गार्ड" /><option value="मेमोरी कार्ड" /><option value="अन्य" /></datalist>
           <datalist id="km-net"><option value="4G" /><option value="5G" /><option value="Bluetooth" /><option value="Wired" /><option value="सामान्य" /></datalist>
           <div className="admin-full admin-imagebox">
@@ -283,6 +290,7 @@ export function OwnerPanel({ onClose, data, refresh }: { onClose: () => void; da
             <span>{row.name || row.title || row.customer_name}</span>
             <span className="admin-row-actions">
               <button type="button" className="edit-btn" onClick={() => startEdit(row)}>बदलें</button>
+              {tab === 'products' && <button type="button" className="edit-btn" onClick={() => copyLink(row.id)}>लिंक कॉपी</button>}
               <button type="button" onClick={() => remove(row)} aria-label="हटाएं"><X size={15} /></button>
             </span>
           </div>

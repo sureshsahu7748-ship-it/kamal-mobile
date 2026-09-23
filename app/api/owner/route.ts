@@ -32,6 +32,20 @@ function headerPasscode(request: Request): string {
   try { return decodeURIComponent(raw) } catch { return raw }
 }
 
+type WriteResult = { data: unknown; error: { message: string } | null }
+
+// अगर Supabase में mrp कॉलम अभी नहीं जुड़ा तो बाकी जानकारी बिना mrp के सेव कर देना (साइट न रुके)
+async function writeWithMrpFallback(payload: Record<string, unknown>, run: (p: Record<string, unknown>) => PromiseLike<WriteResult>) {
+  let result = await run(payload)
+  let warning: string | undefined
+  if (result.error && 'mrp' in payload && /mrp/i.test(result.error.message)) {
+    const { mrp, ...rest } = payload
+    result = await run(rest)
+    if (!result.error && mrp !== null && mrp !== undefined) warning = 'बाकी जानकारी सेव हो गई, पर MRP सेव नहीं हुआ। Supabase में products टेबल में mrp कॉलम जोड़ना होगा।'
+  }
+  return { data: result.data, error: result.error, warning }
+}
+
 export async function POST(request: Request) {
   let body: any
   try { body = await request.json() } catch { return json({ error: 'गलत अनुरोध' }, 400) }
@@ -99,14 +113,14 @@ export async function POST(request: Request) {
   if (body.action === 'insert') {
     const payload = cleanPayload(body.table, body.payload)
     if (!payload) return json({ error: 'जानकारी अधूरी या गलत है।' }, 400)
-    const { data, error } = await admin.from(body.table).insert(payload).select().single()
-    return json({ data, error: error?.message }, error ? 400 : 200)
+    const { data, error, warning } = await writeWithMrpFallback(payload, p => admin.from(body.table).insert(p).select().single())
+    return json({ data, error: error?.message, warning }, error ? 400 : 200)
   }
   if (body.action === 'update') {
     const payload = cleanPayload(body.table, body.payload)
     if (!payload || typeof body.id !== 'string' || !body.id) return json({ error: 'जानकारी अधूरी या गलत है।' }, 400)
-    const { data, error } = await admin.from(body.table).update(payload).eq('id', body.id).select().single()
-    return json({ data, error: error?.message }, error ? 400 : 200)
+    const { data, error, warning } = await writeWithMrpFallback(payload, p => admin.from(body.table).update(p).eq('id', body.id).select().single())
+    return json({ data, error: error?.message, warning }, error ? 400 : 200)
   }
   if (body.action === 'delete') {
     if (typeof body.id !== 'string' || !body.id) return json({ error: 'गलत अनुरोध' }, 400)
