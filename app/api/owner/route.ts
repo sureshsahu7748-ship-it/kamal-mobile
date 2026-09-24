@@ -102,8 +102,10 @@ export async function POST(request: Request) {
         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-') || 'photo.jpg'
         urls.push(await uploadToCloudinary({ name: safeName, type: file.type, data: file.data }))
       }
-    } catch {
-      return json({ error: 'फ़ोटो सेव नहीं हो पाई। Cloudinary की सेटिंग जाँचें।' }, 500)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : ''
+      console.error('[v0] Cloudinary upload failed:', message)
+      return json({ error: message || 'फ़ोटो सेव नहीं हो पाई। Cloudinary की सेटिंग जाँचें।' }, 500)
     }
     return json({ urls })
   }
