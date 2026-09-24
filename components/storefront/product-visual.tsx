@@ -12,7 +12,7 @@ export function ProductVisual({ product }: { product: Product }) {
   return (
     <div className="product-image">
       <span className="photo-bg" style={{ backgroundImage: `url("${String(src).replace(/"/g, '%22')}")` }} aria-hidden="true" />
-      <img src={src} alt={`${product.name} ${active + 1}`} loading="lazy" />
+      <img src={src} alt={`${product.name} ${active + 1}`} loading="lazy" onError={event => { event.currentTarget.style.display = 'none' }} />
       <span className={product.stock_status.includes('कम') ? 'stock low' : 'stock'}>
         <Check size={13} /> {product.stock_status}
       </span>
